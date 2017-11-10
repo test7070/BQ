@@ -94,7 +94,6 @@
                             $('#txtFax').val(asm[0].fax);
                             $('#txtPost').val(asm[0].post);
                             $('#txtAddr').val(asm[0].addr);
-                            $('#txtAddr').val(asm[0].addr);
                             $('#txtMoney').val(asm[0].money);
                             $('#txtTax').val(asm[0].tax);
                             $('#cmbTaxtype').val(asm[0].taxtype);
@@ -103,7 +102,7 @@
                         }
                         var as = _q_appendData("ordexs", "", true);
                         q_gridAddRow(bbsHtm, 'tbbs', 'txtNo3,txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo'
-                        , as.length, as, 'no2,productno,product,spec,gweight,unit,mount,price,total,memo', 'txtNo3,txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo','');
+                        , as.length, as, 'no2,productno,product,spec,gweight,unit,mount,price,total,memo', 'txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo','');
                         for ( i = 0; i < q_bbsCount; i++) {
                             if (i < as.length) {
                             }else{
@@ -446,7 +445,7 @@
                         <td class="tdZ"></td>
                     </tr>
 					<tr class="tr1">
-					    <td class="td1"><span> </span><a id='lblDatea' class="lbl">報價日期</a></td>
+					    <td class="td1"><span> </span><a id='lblDatea_bq' class="lbl">報價日期</a></td>
 						<td class="td2"><input id="txtDatea" type="text" class="txt c1"/></td>
 						<td class="td3"><span> </span><a id='lblContract' class="lbl"> </a></td>
                         <td class="td4" colspan="2"><input id="txtContract" type="text" class="txt c1"/></td>
