@@ -413,7 +413,7 @@
 					<tr class="tr1">
 						<td class="td1"><span> </span><a id='lblDatea' class="lbl">報價日期</a></td>
 						<td class="td2"><input id="txtDatea" type="text" class="txt c1"/></td>
-						<td class="td3"><span> </span><a id='lblOrdcno_bq' class="lbl">合約號碼</a></td>
+						<td class="td3"><span> </span><a id='lblOrdcno_bq' class="lbl">合約字號</a></td>
                         <td class="td4" colspan='2'><input id="txtOrdcno" type="text" class="txt c1"/></td>
 						<td class="td6"><span> </span><a id='lblNoa_bq' class="lbl">單據編號</a></td>
 						<td class="td7"><input id="txtNoa" type="text" class="txt c1"/></td>
