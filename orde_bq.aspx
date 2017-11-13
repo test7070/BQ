@@ -249,7 +249,7 @@
             function _btnSeek() {
                 if (q_cur > 0 && q_cur < 4)// 1-3
                     return;
-                q_box('ordest_s.aspx', q_name + '_s', "550px", "700px", q_getMsg("popSeek"));
+                q_box('orde_bq_s.aspx', q_name + '_s', "550px", "700px", q_getMsg("popSeek"));
             }
 
             function bbtAssign() {
