@@ -68,11 +68,13 @@
             function sum() {
                 var t1 = 0, t_unit, t_mount, t_weight = 0, t_total = 0;
                 for (var j = 0; j < q_bbsCount; j++) {
+                    t_weight=q_add(t_weight,q_mul(q_float('txtGweight_' + j),q_float('txtMount_' + j)));
                     $('#txtTotal_' + j).val(round(q_mul(q_float('txtGweight_' + j),(q_mul(q_float('txtMount_' + j), q_float('txtPrice_' + j)))),0));
                     t_total = q_add(t_total, q_float('txtTotal_' + j));
                 }
                 q_tr('txtMoney', t_total);
                 q_tr('txtTotal', t_total);
+                q_tr('txtWeight',t_weight);
                 calTax();
                
             }
@@ -310,8 +312,7 @@
             }
 
             function btnPrint() {
-                //t_where = "noa='" + $('#txtNoa').val() + "'";
-                //q_box("z_ordestp.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where, '', "95%", "95%", q_getMsg('popPrint'));
+                q_box('z_ordep_bq.aspx' + "?;;;noa=" + trim($('#txtNoa').val()) + ";" + r_accy, '', "95%", "95%", m_print);
             }
 
             function wrServer(key_value) {
