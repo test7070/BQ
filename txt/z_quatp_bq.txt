@@ -1,0 +1,109 @@
+﻿z_quatp_bq1:--z_quatp_bq1
+declare @t_noa nvarchar(30)
+declare @t_title nvarchar(30)
+set @t_noa = case when '#non' = [1] then '' else [1] end
+set @t_title = case when '#non' = [2] then '' else [2] end
+declare @tmp table(
+	gno nvarchar(1),
+	custno nvarchar(50),
+	comp nvarchar(400),
+	datea nvarchar(10),			
+	fax nvarchar(50),
+	noa nvarchar(50),
+	contract nvarchar(50),
+	addr2 nvarchar(max),
+	rr int,
+	page int,
+	product nvarchar(100),
+	spec nvarchar(100),
+	eweight float,
+	unit nvarchar(20),
+	mount float,
+	price float,
+	total float,
+	memo nvarchar(max),
+	mea nvarchar(max),
+	tax float,
+	money float,
+	ttotal float,
+	chr float
+)
+insert @tmp
+select '0',a.custno,c.comp,a.datea,a.fax,a.noa,a.contract,a.addr2,ROW_NUMBER()over(partition by b.noa order by noq),''
+,b.product,b.spec,b.eweight,b.unit,b.mount,b.price,b.total,b.memo,replace(a.memo2,'chr(10)','<br>'),a.tax,a.money,a.total
+,(len(a.memo2) - len(REPLACE(a.memo2,'chr(10)',''))) / len('chr(10)')
+from view_quat a left join view_quats b on a.noa=b.noa
+left join cust c on a.custno=c.noa
+where (a.noa = @t_noa)
+
+insert @tmp(gno,rr,custno,noa,mea,chr,money,tax,ttotal)
+select '1',MAX(rr)+1,custno,noa,mea,chr,money,tax,ttotal
+from @tmp
+where len(isnull(mea,''))!=0
+group by custno,noa,mea,chr,money,tax,ttotal
+
+insert @tmp(gno,rr,custno,noa,chr,money,tax,ttotal)
+select '2',MAX(rr)+chr+1,custno,noa,chr,money,tax,ttotal
+from @tmp
+where gno='1'
+group by custno,noa,chr,money,tax,ttotal
+
+declare @pageline int =28
+declare @custno nvarchar(50)
+declare @noa nvarchar(50)  
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(rr/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select noa,custno,MAX(rr),MAX(page) from @tmp where gno='2' group by custno,noa
+open cursor_table 
+fetch next from cursor_table 
+into @noa,@custno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,noa,custno,rr,page)
+		select '2',@noa,@custno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @noa,@custno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+insert @tmp(gno,rr,page,custno,noa,money,tax,ttotal)
+select '3',999998,'',custno,noa,money,tax,ttotal
+from @tmp
+where gno='0'
+group by custno,noa,chr,money,tax,ttotal
+
+update @tmp
+set page=b.page
+from @tmp a
+outer apply(select MAX(page)page from @tmp where a.noa=noa group by noa)b
+where gno='3'
+
+insert @tmp(gno,rr,page,custno,noa)
+select '4',999999,page,custno,noa
+from @tmp
+group by custno,noa,page
+
+select 
+case @t_title when 1 then '報價單' when 2 then '合約書' when 3 then '訂購單' end title
+,dbo.getComma(mount,0)mount
+,dbo.getComma(eweight,1)eweight
+,dbo.getComma(price,0)price
+,dbo.getComma(ttotal,0)ttotal
+,dbo.getComma(money,0)money
+,dbo.getComma(tax,0)tax
+,* from @tmp
+order by noa,page,rr,gno
+;

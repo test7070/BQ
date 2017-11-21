@@ -1,0 +1,96 @@
+﻿z_ordep_bq1:--z_ordep_bq1
+declare @t_bnoa nvarchar(30)
+declare @t_enoa nvarchar(30)
+set @t_bnoa = case when '#non' = [1] then '' else [1] end
+set @t_enoa = case when '#non'=[2] then CHAR(255) else [2] end
+declare @tmp table(
+	gno nvarchar(1),
+	page int,
+	custno nvarchar(50),
+	comp nvarchar(100),
+	noa nvarchar(50),	
+	datea nvarchar(50),
+	addr2 nvarchar(max),
+	mt float,
+	contract nvarchar(50),
+	date1 nvarchar(50),
+	addr nvarchar(max),						
+	rr int,
+	productno nvarchar(50),
+	product nvarchar(200),	
+	spec nvarchar(100),	
+	unit nvarchar(50),	
+	eweight float,
+	mount float,
+	total float,
+	memo nvarchar(max),
+	mea nvarchar(max),
+	chr float
+)
+insert @tmp
+select '0','',a.custno,a.comp,a.noa,a.odate,a.addr2,a.weight,a.contract,a.date1,a.addr,ROW_NUMBER()over(partition by a.noa order by b.no2),b.productno,b.product,
+b.spec,b.unit,b.gweight,b.mount,c.weight,b.memo,replace(a.memo2,'chr(10)','<br>'),(len(a.memo2) - len(REPLACE(a.memo2,'chr(10)',''))) / len('chr(10)')
+from view_orde a left join view_ordes b on a.noa=b.noa
+left join view_ordet c on b.noa=c.noa and b.no2=c.no3
+where (a.noa between @t_bnoa and @t_enoa)
+
+insert @tmp(gno,custno,rr,comp,noa,datea,addr2,mt,contract,date1,addr,mea,chr)
+select '1',custno,MAX(rr)+1,comp,noa,datea,addr2,mt,contract,date1,addr,mea,chr
+from @tmp
+group by custno,comp,noa,datea,addr2,mt,contract,date1,addr,mea,chr
+
+insert @tmp(gno,custno,rr,comp,noa,datea,addr2,mt,contract,date1,addr)
+select '2',custno,MAX(rr)+chr+1,comp,noa,datea,addr2,mt,contract,date1,addr
+from @tmp
+where gno='1'
+group by custno,comp,noa,datea,addr2,mt,contract,date1,addr,chr
+
+declare @pageline int =35
+declare @custno nvarchar(50)
+declare @noa nvarchar(50)  
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(rr/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select noa,custno,MAX(rr),MAX(page) from @tmp where gno='2' group by custno,noa
+open cursor_table 
+fetch next from cursor_table 
+into @noa,@custno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,noa,custno,rr,page)
+		select '2',@noa,@custno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @noa,@custno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+insert @tmp(gno,rr,page,custno,noa)
+select '3',999998,page,custno,noa
+from @tmp
+group by custno,noa,page
+
+insert @tmp(gno,rr,page,custno,noa)
+select '4',999999,page,custno,noa
+from @tmp
+group by custno,noa,page
+
+select 
+dbo.getComma(eweight,2)eweight
+,dbo.getComma(mount,0)mount
+,dbo.getComma(total,2)total
+,dbo.getComma(mt,2)+' KG' mt
+,* from @tmp
+order by noa,page,rr,gno
+;
