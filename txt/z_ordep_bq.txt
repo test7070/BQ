@@ -92,5 +92,5 @@ dbo.getComma(eweight,2)eweight
 ,dbo.getComma(total,2)total
 ,dbo.getComma(mt,2)+' KG' mt
 ,* from @tmp
-order by noa,page,rr,gno 
+order by noa,page,rr,gno
 ;

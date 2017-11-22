@@ -19,7 +19,6 @@
             $(document).ready(function() {
             	q_getId();
                 q_gf('', 'z_orde_bq');
-               
             });
             function q_gfPost() {
                 $('#q_report').q_report({
@@ -46,6 +45,17 @@
                         dbf : 'ucaucc',
                         index : 'noa,product',
                         src : 'ucaucc_b.aspx'
+                    }, {
+                        type : '6',//[10]
+                        name : 'xnoa'
+                    }, {
+                        type : '5',//[11]
+                        name : 'xenda',
+                        value : "0@N,1@Y".split(',')
+                    }, {
+                        type : '5',//[12]
+                        name : 'xvccenda',
+                        value : "0@N,1@Y".split(',')
                     }]
                 });
                 q_popAssign();
@@ -61,6 +71,8 @@
                 
                 $('#txtXodate1').val(q_date().substr(0,r_lenm)+'/01');
                 $('#txtXodate2').val(q_cdn(q_cdn(q_date().substr(0,r_lenm)+'/01',45).substr(0,r_lenm)+'/01',-1));
+                $('#txtXdate1').val(q_date().substr(0,r_lenm)+'/01');
+                $('#txtXdate2').val(q_cdn(q_cdn(q_date().substr(0,r_lenm)+'/01',45).substr(0,r_lenm)+'/01',-1));
 	        }
 
             function q_boxClose(s2) {
