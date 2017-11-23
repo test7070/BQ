@@ -1,0 +1,355 @@
+﻿z_orde_bq1:--z_orde_bq1
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+set @t_bdate = case when '#non' = [4] then '' else [4] end
+set @t_edate = case when '#non'=[5] then CHAR(255) else [5] end
+declare @tmp table(
+	gno nvarchar(1),
+	page int,						
+	rr int,
+	odate nvarchar(10),
+	custno nvarchar(50),
+	nick nvarchar(50),
+	addr2 nvarchar(10),
+	mount float,
+	total float,
+	memo nvarchar(max)
+)
+insert @tmp
+select '0','','',odate,custno,comp,addr2,round(SUM(isnull(weight,0)),2),round(SUM(isnull(total,0)),2)
+,replace(memo,'chr(10)','<br>')
+from view_orde
+where (odate between @t_bdate and @t_edate)
+group by odate,custno,comp,addr2,memo
+
+update a
+set rr=rx
+from (select ROW_NUMBER()over(partition by gno order by odate,custno)rx,rr from @tmp)a
+
+declare @pageline int =31
+declare @custno nvarchar(50)
+
+update a
+set page=ceiling(rr/@pageline)
+from (select page,rr from @tmp)a
+
+insert @tmp(gno,page,rr,mount,total)
+select '1',page,999998,SUM(mount),SUM(total)
+from @tmp
+group by page
+
+update @tmp
+set mount=b.mount,total=b.total
+from @tmp a
+outer apply (select SUM(mount)mount,SUM(total)total from @tmp where page<=a.page and gno='1')b
+where gno='1'
+
+insert @tmp(gno,page,rr)
+select '2',page,999999
+from @tmp
+group by page
+
+select 
+@t_bdate bdate,@t_edate edate
+,dbo.getComma(mount,2)mount
+,dbo.getComma(total,0)total
+,* from @tmp
+order by page,rr
+;
+---------------------------------------------------------------------------------------------------
+z_orde_bq2:--z_orde_bq2
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+set @t_bdate = case when '#non' = [4] then '' else [4] end
+set @t_edate = case when '#non'=[5] then CHAR(255) else [5] end
+declare @tmp table(
+	gno nvarchar(1),
+	page int,						
+	rr int,
+	odate nvarchar(10),
+	noa nvarchar(50),
+	custno nvarchar(50),
+	nick nvarchar(50),
+	addr2 nvarchar(10),
+	mount float,
+	total float,
+	cw float,
+	nw float,
+	tn nvarchar(50)
+)
+insert @tmp
+select '0','','',a.odate,a.noa,a.custno,a.comp,addr2,round(isnull(a.weight,0),2),isnull(a.total,0)
+,SUM(isnull(gweight*c1,0)),SUM(isnull(gweight*notv,0)),''
+from view_orde a left join view_ordes b on a.noa=b.noa
+where (a.odate between @t_bdate and @t_edate)
+group by a.odate,a.noa,a.custno,a.comp,a.addr2,a.weight,a.total
+
+update a
+set rr=rx
+from (select ROW_NUMBER()over(partition by gno order by odate,custno)rx,rr from @tmp)a
+
+declare @pageline int =20
+declare @custno nvarchar(50)
+
+update a
+set page=ceiling(rr/@pageline)
+from (select page,rr from @tmp)a
+
+insert @tmp(gno,page,rr,mount,total,cw,nw)
+select '1',page,MAX(rr),SUM(mount),SUM(total),SUM(cw),SUM(nw)
+from @tmp
+group by page
+
+update @tmp
+set mount=b.mount,total=b.total,cw=b.cw,nw=b.nw
+from @tmp a
+outer apply (select SUM(mount)mount,SUM(total)total,SUM(cw)cw,SUM(nw)nw from @tmp where page<=a.page and gno='1')b
+where gno='1'
+
+update @tmp
+set tn='總訂單庫存量：  '+cast(b.rr as nvarchar(10))
+from @tmp a
+outer apply (select MAX(rr)rr,MAX(page)page from @tmp having a.page=MAX(page))b
+
+insert @tmp(gno,page,rr)
+select '2',page,999999
+from @tmp
+group by page
+
+select 
+@t_bdate bdate,@t_edate edate
+,dbo.getComma(mount,2)mount
+,dbo.getComma(total,0)total
+,dbo.getComma(nw,2)nw
+,dbo.getComma(cw,2)cw
+,* from @tmp
+order by page,rr
+;
+----------------------------------------------------------------------------------------------------
+z_orde_bq3:--z_orde_bq3
+declare @t_noa nvarchar(30)
+declare @t_cancel nvarchar(30)
+set @t_noa = case when '#non' = [10] then '' else [10] end
+set @t_cancel = case when '#non' = [11] then '0' else [11] end
+declare @tmp table(
+	gno	nvarchar(1),
+	custno nvarchar(50),
+	comp nvarchar(50),
+	contract nvarchar(50),
+	addr2 nvarchar(max),
+	noa nvarchar(50),
+	odate nvarchar(10),
+	date1 nvarchar(10),
+	cancel nvarchar(10),
+	productno nvarchar(50),
+	product nvarchar(200),
+	spec nvarchar(100),
+	datea nvarchar(10),
+	mount float,
+	c1 float,
+	notv float,
+	cl nvarchar(10)
+)
+insert @tmp(gno,custno,comp,contract,addr2,noa,odate,date1,cancel)
+select '0',custno,comp,contract,addr2,noa,odate,date1,case when cancel='1' then 'Y' end cancel
+from view_orde
+where noa=@t_noa
+
+insert @tmp(gno,custno,noa,productno,product,spec,datea,mount,c1,notv,cl)
+select '1',a.custno,a.noa,b.productno,b.product,b.spec,b.datea,sum(b.mount),sum(b.c1),sum(b.notv)
+,case when b.cancel='1' then 'Y' end
+from @tmp a left join view_ordes b on a.noa=b.noa
+where b.enda=@t_cancel
+group by a.custno,a.noa,b.productno,b.product,b.spec,b.datea,b.cancel
+
+select 
+dbo.getComma(mount,2)mount
+,dbo.getComma(c1,2)c1
+,dbo.getComma(notv,2)notv
+,* from @tmp
+order by noa,gno
+;
+------------------------------------------------------------------------------------------------------
+z_orde_bq4:--z_orde_bq4
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+declare @t_bcustno nvarchar(30)
+declare @t_ecustno nvarchar(30)
+declare @t_bproductno nvarchar(30)
+declare @t_eproductno nvarchar(30)
+declare @t_enda nvarchar(30)
+declare @t_vcc nvarchar(30)
+set @t_bdate = case when '#non' = [2] then '' else [2] end
+set @t_edate = case when '#non'=[3] then CHAR(255) else [3] end
+set @t_bcustno = case when '#non' = [6] then '' else [6] end
+set @t_ecustno = case when '#non'=[7] then CHAR(255) else [7] end
+set @t_bproductno = case when '#non' = [8] then '' else [8] end
+set @t_eproductno = case when '#non'=[9] then CHAR(255) else [9] end
+set @t_enda = case when '#non' = [11] then '0' else [11] end
+set @t_vcc = case when '#non' = [12] then '0' else [12] end
+declare @tmp table(
+	gno	nvarchar(1),
+	rr int,
+	custno nvarchar(50),
+	comp nvarchar(50),
+	noa nvarchar(50),
+	vccno nvarchar(50),
+	no2 nvarchar(50),
+	productno nvarchar(50),
+	product nvarchar(200),
+	spec nvarchar(100),
+	datea nvarchar(10),
+	vccda nvarchar(10),
+	mount float,
+	c1 float,
+	notv float	
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by custno,productno order by datea,noa),custno,cust,noa,'',no2,productno,product,spec,datea,'',mount,c1,notv
+from view_ordes
+where (datea between @t_bdate and @t_edate)
+and(custno between @t_bcustno and @t_ecustno)
+and(productno between @t_bproductno and @t_eproductno)
+and(enda=@t_enda)
+
+if(@t_vcc='1')
+begin
+	insert @tmp
+	select '2','',a.custno,a.comp,a.noa,b.noa,a.no2,a.productno,b.product,b.spec,a.datea,b.datea,'',b.mount,a.notv
+	from @tmp a left join view_vccs b on a.noa=b.ordeno and a.no2=b.no2
+	where isnull(b.noa,'')!=''
+end
+
+update @tmp
+set gno= case when rr='1' then 0 else 1 end
+where gno='0'
+
+insert @tmp(gno,rr,custno,productno,mount,c1,notv)
+select '3',99998,custno,productno,sum(mount),sum(c1),sum(notv)
+from @tmp
+where gno!='2'
+group by custno,productno
+
+insert @tmp(gno,rr,custno,productno)
+select '4',99999,custno,CHAR(255)
+from @tmp
+group by custno
+
+select 
+@t_bdate bdate,@t_edate edate
+,dbo.getComma(mount,2)mount
+,dbo.getComma(c1,2)c1
+,dbo.getComma(notv,2)notv
+,* from @tmp
+order by custno,productno,gno,rr
+;
+-------------------------------------------------------------------------------
+z_orde_bq5:--z_orde_bq5
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+declare @t_bcustno nvarchar(30)
+declare @t_ecustno nvarchar(30)
+declare @t_bproductno nvarchar(30)
+declare @t_eproductno nvarchar(30)
+set @t_bdate = case when '#non' = [2] then '' else [2] end
+set @t_edate = case when '#non'=[3] then CHAR(255) else [3] end
+set @t_bcustno = case when '#non' = [6] then '' else [6] end
+set @t_ecustno = case when '#non'=[7] then CHAR(255) else [7] end
+set @t_bproductno = case when '#non' = [8] then '' else [8] end
+set @t_eproductno = case when '#non'=[9] then CHAR(255) else [9] end
+
+declare @tmp table(
+	gno	nvarchar(1),
+	rr int,
+	custno nvarchar(50),
+	comp nvarchar(50),
+	tel nvarchar(50),
+	noa nvarchar(50),
+	productno nvarchar(50),
+	product nvarchar(200),
+	spec nvarchar(100),
+	datea nvarchar(10),
+	mount float,
+	gweight float,
+	unit nvarchar(20),
+	price float,
+	total float
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by custno,productno order by a.datea,a.noa),custno,cust,b.tel,a.noa
+,productno,product,spec,a.datea,mount,gweight,a.unit,a.price,total
+from view_ordes a
+left join cust b on a.custno=b.noa
+where (a.datea between @t_bdate and @t_edate)
+and(custno between @t_bcustno and @t_ecustno)
+and(productno between @t_bproductno and @t_eproductno)
+
+update @tmp
+set gno= case when rr='1' then 0 else 1 end
+
+insert @tmp(gno,rr,custno,productno)
+select '2',99999,custno,CHAR(255)
+from @tmp
+group by custno
+
+select 
+dbo.getComma(gweight,2)gweight
+,dbo.getComma(mount,1)mount
+,dbo.getComma(price,2)price
+,dbo.getComma(total,0)total
+,* from @tmp
+order by custno,productno,datea,noa
+;
+------------------------------------------------------------------------------
+z_orde_bq6:--z_orde_bq6
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+declare @t_bproductno nvarchar(30)
+declare @t_eproductno nvarchar(30)
+set @t_bdate = case when '#non' = [2] then '' else [2] end
+set @t_edate = case when '#non'=[3] then CHAR(255) else [3] end
+set @t_bproductno = case when '#non' = [8] then '' else [8] end
+set @t_eproductno = case when '#non'=[9] then CHAR(255) else [9] end
+
+declare @tmp table(
+	gno	nvarchar(1),
+	rr int,
+	custno nvarchar(50),
+	nick nvarchar(50),
+	noa nvarchar(50),
+	productno nvarchar(50),
+	product nvarchar(200),
+	spec nvarchar(100),
+	datea nvarchar(10),
+	mount float,
+	gweight float,
+	unit nvarchar(20),
+	price float,
+	total float
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by productno order by a.datea,a.noa,custno),custno,b.nick,a.noa
+,productno,product,spec,a.datea,mount,gweight,a.unit,a.price,total
+from view_ordes a
+left join cust b on a.custno=b.noa
+where (a.datea between @t_bdate and @t_edate)
+and(productno between @t_bproductno and @t_eproductno)
+
+
+update @tmp
+set gno= case when rr='1' then 0 else 1 end
+
+insert @tmp(gno,rr,productno,mount)
+select '2',99998,productno,sum(mount)
+from @tmp
+group by productno
+
+select 
+@t_bdate bdate,@t_edate edate
+,dbo.getComma(gweight,2)gweight
+,dbo.getComma(mount,1)mount
+,dbo.getComma(price,2)price
+,dbo.getComma(total,0)total
+,* from @tmp
+order by productno,rr
+;
