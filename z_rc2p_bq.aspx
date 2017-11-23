@@ -18,12 +18,12 @@
              
             $(document).ready(function() {
             	q_getId();
-                q_gf('', 'z_ordcp_bq');
+                q_gf('', 'z_rc2p_bq');
                
             });
             function q_gfPost() {
                 $('#q_report').q_report({
-                    fileName : 'z_ordcp_bq',
+                    fileName : 'z_rc2p_bq',
                     options : [ {
                         type : '6',//[1][2]
                         name : 'xnoa'
