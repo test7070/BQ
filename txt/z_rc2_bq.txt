@@ -1,0 +1,54 @@
+﻿z_rc2_bq1:--z_rc2_bq1
+declare @t_bdate nvarchar(30)
+declare @t_edate nvarchar(30)
+set @t_bdate = case when '#non' = [2] then '' else [2] end
+set @t_edate = case when '#non'=[3] then CHAR(255) else [3] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,									
+	odate nvarchar(10),
+	typea nvarchar(10),
+	noa nvarchar(50),
+	tno nvarchar(50),
+	tgg nvarchar(100),
+	total float,
+	productno nvarchar(50),
+	product nvarchar(100),
+	spec nvarchar(100),
+	unit nvarchar(50),
+	mount float,
+	price float,
+	atal float,							
+	rtal float,--退總額
+	tax	float,
+	ttotal float--進總額	
+)
+insert @tmp
+select '0','',a.datea,case when a.typea='1' then '進' else '退' end,a.noa,a.tggno,a.tgg,a.total,b.productno,b.product,b.spec,b.unit,b.mount,b.price,b.total,
+case when a.typea='2' then a.total*-1 else 0 end,a.tax,case when a.typea='1' then a.total else 0 end
+from view_rc2 a left join view_rc2s b on a.noa=b.noa
+where a.datea between @t_bdate and @t_edate
+
+update a
+set rr=rx,total=case when rx!='1' then 0 else total end
+,ttotal=case when rx!='1' then 0 else ttotal end
+,rtal=case when rx!='1' then 0 else rtal end
+,tax=case when rx!='1' then 0 else tax end
+,gno=case when rx!='1' then 1 else 0 end
+from (select ROW_NUMBER()over(partition by noa order by odate,tno,productno)rx,rr,total,rtal,tax,gno,ttotal from @tmp) a
+
+insert @tmp(gno,total,rtal,tax)
+select '2',SUM(ttotal),SUM(rtal),SUM(tax)
+from @tmp
+
+select
+@t_bdate bdate,@t_edate edate
+,dbo.getComma(mount,0)mount
+,dbo.getComma(price,3)price
+,dbo.getComma(total,0)total
+,dbo.getComma(rtal,0)rtal
+,dbo.getComma(atal,0)atal
+,dbo.getComma(tax,0)tax
+,* from @tmp
+;
