@@ -67,9 +67,10 @@
 			function sum() {
 				var t1 = 0, t_unit, t_mount, t_weight = 0, t_total = 0;
                 for (var j = 0; j < q_bbsCount; j++) {
-                    t_weight=q_add(t_weight,q_mul(q_float('txtWeight_' + j),q_float('txtMount_' + j)));
-                    $('#txtTotal_' + j).val(round(q_mul(q_float('txtWeight_' + j),(q_mul(q_float('txtMount_' + j), q_float('txtPrice_' + j)))),0));
+                    t_weight=q_add(t_weight,q_mul(q_float('txtDime_' + j),q_float('txtMount_' + j)));
+                    $('#txtTotal_' + j).val(round(q_mul(q_float('txtDime_' + j),(q_mul(q_float('txtMount_' + j), q_float('txtPrice_' + j)))),0));
                     t_total = q_add(t_total, q_float('txtTotal_' + j));
+                    q_tr('txtNotv_' + j, q_sub(q_float('txtMount_' + j), q_float('txtC1' + j)));
                 }
                 q_tr('txtMoney', t_total);
                 q_tr('txtTotal', t_total);
@@ -344,7 +345,7 @@
 			}
 
 			function btnPrint() {
-				q_box("z_ordcp.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";noa=" + $('#txtNoa').val() + ";" + r_accy, 'z_ordcp', "95%", "95%", q_getMsg('popPrint'));
+				q_box("z_ordcp_bq.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";noa=" + $('#txtNoa').val() + ";" + r_accy, 'z_ordcp', "95%", "95%", q_getMsg('popPrint'));
 			}
 
 			function wrServer(key_value) {
@@ -732,7 +733,7 @@
 					<tr>
 						<td align="center" style="width:5%"><a id='vewChk'> </a></td>
 						<td align="center" style="width:20%"><a id='vewOdate'> </a></td>
-						<td align="center" style="width:25%"><a id='vewNoa'> </a></td>
+						<td align="center" style="width:25%"><a id='vewNoa_bq'>請購單號</a></td>
 						<td align="center" style="width:30%"><a id='vewTgg'> </a></td>
 					</tr>
 					<tr>
@@ -749,7 +750,7 @@
 						<td style="width: 108px;"><span> </span><a id='lblOdate' class="lbl"> </a></td>
 						<td style="width: 108px;"><input id="txtOdate" type="text" class="txt c1 lef"/></td>
 						<td style="width: 108px;"> </td>
-						<td style="width: 108px;"><span> </span><a id='lblNoa' class="lbl"> </a></td>
+						<td style="width: 108px;"><span> </span><a id='lblNoa_bq' class="lbl">請購單號</a></td>
                         <td style="width: 108px;" colspan='2'><input id="txtNoa"  type="text" class="txt c1 lef"/></td>
 						<td style="width: 108px;"><span> </span><a id='lblDatea' class="lbl"> </a></td>
 						<td style="width: 108px;"><input id="txtDatea" type="text" class="txt c1 lef"/></td>
@@ -791,7 +792,7 @@
 					</tr>
 					<tr>
 						<td><span> </span><a id='lblMemo' class="lbl"> </a></td>
-						<td colspan='5'><textarea id="txtMemo" cols="10" rows="5" style="width: 99%;height: 50px;"> </textarea></td>
+						<td colspan='7'><textarea id="txtMemo" cols="10" rows="5" style="width: 99%;height: 50px;"> </textarea></td>
 					</tr>
 				</table>
 			</div>
@@ -828,7 +829,7 @@
 					<td><input id="txtProduct.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSpec.*" type="text" class="txt c1 isSpec"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
-					<td><input id="txtWeight.*" type="text" class="txt num c1" /></td>
+					<td><input id="txtDime.*" type="text" class="txt num c1" /></td>
 					<td><input id="txtMount.*" type="text" class="txt num c1" /></td>
 					<td><input id="txtPrice.*" type="text" class="txt num c1" /></td>
 					<td><input id="txtTotal.*" type="text" class="txt num c1" /></td>

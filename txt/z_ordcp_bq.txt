@@ -1,0 +1,89 @@
+﻿z_ordcp_bq1:--z_ordcp_bq1
+declare @t_bnoa nvarchar(30)
+set @t_bnoa = case when '#non' = [1] then '' else [1] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,
+	page int,
+	tno nvarchar(50),
+	tgg	nvarchar(50),		
+	datea nvarchar(10),
+	noa nvarchar(50),
+	trandate nvarchar(50),
+	productno nvarchar(50),
+	product nvarchar(200),
+	gweight int,
+	unit nvarchar(10),
+	mount int,
+	price int,
+	memo nvarchar(max),
+	meom nvarchar(max)
+)
+insert @tmp
+select '1',ROW_NUMBER()over(partition by a.noa order by b.no2),'',a.tggno,a.tgg,a.datea,a.noa,a.trandate,b.productno,b.product,b.weight,b.unit,b.mount,b.price,b.memo,a.memo
+from view_ordcs b left join view_ordc a on a.noa=b.noa
+where (a.noa=@t_bnoa)
+
+declare @pageline int =10--一頁10個品項
+declare @tggno nvarchar(50)
+declare @noa nvarchar(50)  
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(cast(rr as float)/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select noa,tno,MAX(rr),MAX(page) from @tmp group by tno,noa
+open cursor_table 
+fetch next from cursor_table 
+into @noa,@tggno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,noa,tno,rr,page)
+		select '2',@noa,@tggno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @noa,@tggno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+--表頭
+insert @tmp(gno,rr,page,tno,tgg,datea,noa,trandate,meom)
+select '0',0,page,tno,tgg,datea,noa,trandate,meom
+from @tmp
+where gno='1'
+group by page,tno,tgg,datea,noa,trandate,meom
+
+--表尾
+insert @tmp(gno,rr,page,tno,datea,noa,trandate,meom)
+select '3',99998,page,tno,datea,noa,trandate,meom
+from @tmp
+where gno='1'
+group by page,tno,datea,noa,trandate,meom
+
+--表尾
+insert @tmp(gno,rr,page,noa)
+select '4',99999,page,noa
+from @tmp
+group by page,noa
+
+select 
+dbo.getComma(gweight,2)gweight
+,dbo.getComma(mount,1)mount
+,dbo.getComma(price,3)price
+,* from @tmp
+order by noa,page,rr
+;					
+									
+									
+									
+							
