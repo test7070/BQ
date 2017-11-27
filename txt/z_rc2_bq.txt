@@ -25,8 +25,9 @@ declare @tmp table(
 	ttotal float--進總額	
 )
 insert @tmp
-select '0','',a.datea,case when a.typea='1' then '進' else '退' end,a.noa,a.tggno,a.tgg,a.total,b.productno,b.product,b.spec,b.unit,b.mount,b.price,b.total,
-case when a.typea='2' then a.total*-1 else 0 end,a.tax,case when a.typea='1' then a.total else 0 end
+select '0','',a.datea,case when a.typea='1' then '進' else '退' end,a.noa
+,a.tggno,a.tgg,a.total,b.productno,b.product,b.spec,b.unit,b.mount,b.price,b.total,
+case when a.typea='2' then a.total*-1 else 0 end,case when a.typea='1' then a.tax else 0 end,case when a.typea='1' then a.total else 0 end
 from view_rc2 a left join view_rc2s b on a.noa=b.noa
 where a.datea between @t_bdate and @t_edate
 
@@ -38,8 +39,8 @@ set rr=rx,total=case when rx!='1' then 0 else total end
 ,gno=case when rx!='1' then 1 else 0 end
 from (select ROW_NUMBER()over(partition by noa order by odate,tno,productno)rx,rr,total,rtal,tax,gno,ttotal from @tmp) a
 
-insert @tmp(gno,total,rtal,tax)
-select '2',SUM(ttotal),SUM(rtal),SUM(tax)
+insert @tmp(gno,odate,total,rtal,tax)
+select '2',CHAR(255),SUM(total)+SUM(rtal)-SUM(tax),SUM(rtal),SUM(tax)
 from @tmp
 
 select
@@ -51,4 +52,114 @@ select
 ,dbo.getComma(atal,0)atal
 ,dbo.getComma(tax,0)tax
 ,* from @tmp
+order by odate,noa,gno
+;
+----------------------------------------------------------------------------------------------
+z_rc2_bq2:--z_rc2_bq2
+declare @t_bmon nvarchar(30)
+declare @t_emon nvarchar(30)
+set @t_bmon = case when '#non' = [6] then '' else [6] end
+set @t_emon = case when '#non'= [7] then CHAR(255) else [7] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,									
+	odate nvarchar(10),
+	typea nvarchar(10),
+	noa nvarchar(50),
+	tno nvarchar(50),
+	tgg nvarchar(100),
+	total float,
+	productno nvarchar(50),
+	product nvarchar(100),
+	spec nvarchar(100),
+	unit nvarchar(50),
+	mount float,
+	price float,
+	atal float,							
+	rtal float,--退總額
+	tax	float,
+	ttotal float,--進總額
+	mon nvarchar(10),
+	tel nvarchar(50),
+	addr nvarchar(max),
+	gweight float,
+	page float	
+)
+insert @tmp
+select '0','',a.datea,case when a.typea='1' then '進' else '退' end,a.noa
+,a.tggno,a.tgg,a.total,b.productno,b.product,b.spec,b.unit,b.mount,b.price,b.total,
+case when a.typea='2' then a.total*-1 else 0 end,case when a.typea='1' then a.tax else 0 end
+,case when a.typea='1' then a.total else 0 end,a.mon,c.tel,c.addr_comp,b.gweight,''
+from view_rc2 a left join view_rc2s b on a.noa=b.noa
+left join tgg c on a.tggno=c.noa
+where a.mon between @t_bmon and @t_emon
+
+update a
+set rr=rx,total=case when rx!='1' then 0 else total end
+,ttotal=case when rx!='1' then 0 else ttotal end
+,rtal=case when rx!='1' then 0 else rtal end
+,tax=case when rx!='1' then 0 else tax end
+,gno=case when rx!='1' then 1 else 0 end
+from (select ROW_NUMBER()over(partition by noa order by odate,tno,productno)rx,rr,total,rtal,tax,gno,ttotal from @tmp) a
+
+insert @tmp(gno,tno,odate,total,rtal,tax,ttotal)
+select '2',tno,CHAR(255),SUM(total)+SUM(rtal)-SUM(tax),SUM(rtal),SUM(tax),SUM(ttotal)+SUM(rtal)
+from @tmp
+group by tno
+
+insert @tmp(gno,tno,odate,total,rtal,tax,ttotal)
+select '3',tno,CHAR(255),total,rtal,tax,ttotal
+from @tmp
+where gno='2' and rtal!=0
+
+insert @tmp(gno,tno,odate,total,rtal,tax,ttotal)
+select '4',tno,CHAR(255),total,rtal,tax,ttotal
+from @tmp
+where gno='2' and tax!=0
+
+insert @tmp(gno,tno,odate,total)
+select '5',tno,CHAR(255),ttotal
+from @tmp a
+where gno='2'
+
+update a
+set page=b.page
+from @tmp a
+outer apply(select count(*)page,tgg from @tmp where rr='1' and a.tno=tno group by tgg )b
+
+insert @tmp(gno,tno,odate,mon,total)
+select '6',a.tno,CHAR(255),right(b.mon,2)+'月',b.unpay
+from @tmp a
+left join tgg_2s b on a.tno=b.noa
+where gno='2' and b.mon<@t_bmon and b.unpay!=0
+
+insert @tmp(gno,tno,odate,ttotal)
+select '7',a.tno,CHAR(255),sum(b.pay)
+from @tmp a
+left join tgg_2s b on a.tno=b.noa
+where gno='2' and b.mon<@t_bmon and b.pay!=0
+group by tno
+
+insert @tmp(gno,tno,odate,total)
+select '8',tno,CHAR(255),SUM(total)-SUM(ttotal)
+from @tmp a
+where gno='5' or gno='6' or gno='7'
+group by tno
+
+insert @tmp(gno,tno,odate)
+select '9',tno,CHAR(255)
+from @tmp 
+group by tno
+
+select
+dbo.getComma(mount,1)mount
+,dbo.getComma(price,3)price
+,dbo.getComma(total,0)total
+,dbo.getComma(rtal,0)rtal
+,dbo.getComma(atal,0)atal
+,dbo.getComma(tax,0)tax
+,dbo.getComma(gweight,2)gweight
+,* from @tmp
+order by tno,odate,noa,gno,rr
 ;
