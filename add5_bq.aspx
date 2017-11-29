@@ -16,16 +16,16 @@
 			}
 
 			q_tables = 's';
-			var q_name = "add3";
+			var q_name = "add5";
 			var q_readonly = ['txtNoa','txtCardeal'];
 			var q_readonlys = [];
-			var bbmNum = [['txtBoil', 15, 1, 1],['txtEoil', 10, 2, 1],['txtTotal', 10, 1, 1]];
-            var bbsNum = [['txtPrice2', 10, 1, 1],['txtPrice', 10, 2, 1],['txtCount1', 10, 0, 1],['txtCount2', 10, 1, 1]]
-			var bbmMask = [];
-			var bbsMask = [];
+			var bbmNum = [];
+			var bbsNum = [];
+			var bbmMask = [['txtBoil', 10, 0, 1]];
+			var bbsMask = [['txtTotal', 10, 0, 1],['txtMount', 10, 0, 1],['txtPrice2', 10, 1, 1],['txtPrice', 10, 1, 1],['txtCount1', 10, 0, 1],['txtCount2', 10, 0, 1]];
 			q_sqlCount = 6;
 			brwCount = 6;
-			brwCount2 = 6;
+			brwCount2 = 4;
 			brwList = [];
 			brwNowPage = 0;
 			brwKey = 'noa';
@@ -37,9 +37,10 @@
 			});
 			
 			aPop = new Array(
-			    ['txtCardealno', 'lblCardealno_bq', 'cust', 'noa,comp','txtCardealno,txtCardeal', 'cust_b.aspx']
-			    ,['txtProductno_', 'btnProduct_', 'ucaucc', 'noa,product,unit,spec', 'txtProductno_,txtProduct_,txtUnit_,txtSpec_', 'ucaucc_b.aspx']
+				['txtCardealno', 'lblCardealno_bq', 'cust', 'noa,comp','txtCardealno,txtCardeal', 'cust_b.aspx']
+				,['txtProductno_', 'btnProduct_', 'ucaucc', 'noa,product,unit,spec', 'txtProductno_,txtProduct_,txtUnit_,txtSpec_', 'ucaucc_b.aspx']
 			);
+
 			function main() {
 				if (dataErr) {
 					dataErr = false;
@@ -51,8 +52,8 @@
 			function mainPost() {
 				q_getFormat();
 				bbmMask = [['txtDatea', r_picd]];
+				bbsMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
-				document.title='交貨清單';				
 			}
 
 			function q_boxClose(s2) {
@@ -66,37 +67,8 @@
 			}
 
 			function q_gtPost(t_name) {
-				switch (t_name) {
-				    case 'ordeyear':
-                        var asm = _q_appendData("orde", "", true);
-                        if(asm[0]!=undefined){
-                            $('#txtContract').val(asm[0].contract);
-                            $('#txtCardealno').val(asm[0].custno);
-                            $('#txtCardeal').val(asm[0].comp);
-                            $('#txtAddr').val(asm[0].addr2);
-                        }
-                        var as = _q_appendData("ordes", "", true);
-                        q_gridAddRow(bbsHtm, 'tbbs', 'txtNo2,txtProductno,txtProduct,txtSpec,txtPrice2,txtUnit,txtCount1'
-                        , as.length, as, 'no2,productno,product,spec,gweight,unit,mount', 'txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount','');
-                        for ( i = 0; i < q_bbsCount; i++) {
-                            if (i < as.length) {
-                            }else{
-                                _btnMinus("btnMinus_" + i);
-                            }
-                            if($('#txtProduct_'+i).val().indexOf('螺栓')>-1 || $('#txtProduct_'+i).val().indexOf('膠圈')>-1 || $('#txtProduct_'+i).val().indexOf('押圈')>-1 ){
-                                    $('#txtPrice2_'+i).val(0);
-                            }
-                            if( $('#txtProduct_'+i).val().indexOf('膠圈')>-1){
-                                    $('#txtPost_'+i).val('世展');
-                            }else{
-                                    $('#txtPost_'+i).val('IT');
-                            }
-                                
-                        }
-                        $('#txtNoa').focus();
-                        sum();
-                        break;
-                    case 'ordeuno':
+				switch (t_name){
+				    case 'ordeuno':
                         var a = _q_appendData("orde", "", true);
                         var asd = _q_appendData("ordes", "", true);
                         if(a[0]!=undefined){
@@ -116,7 +88,7 @@
                                         $('#txtProduct_'+t_mt).val(asd[i].product);
                                         $('#txtSpec_'+t_mt).val(asd[i].spec);
                                         $('#txtUnit_'+t_mt).val(asd[i].unit);
-                                        $('#txtCount1_'+t_mt).val(asd[i].mount);
+                                        $('#txtMount_'+t_mt).val(asd[i].mount);
                                         if(asd[i].product.indexOf('膠圈')>-1){
                                                 $('#txtPost_'+t_mt).val('世展');
                                         }else{
@@ -126,15 +98,16 @@
                                         t_mt+=1
                                 }else{
                                     for(var j=0;j<asd[i].mount;j++){
-                                        $('#txtProductno_'+t_mt).val(asd[i].productno);
-                                        $('#txtProduct_'+t_mt).val(asd[i].product);
-                                        $('#txtSpec_'+t_mt).val(asd[i].spec);
-                                        $('#txtUnit_'+t_mt).val(asd[i].unit);
-                                        $('#txtCount1_'+t_mt).val(1);
-                                        $('#txtPost_'+t_mt).val('IT');
-                                        $('#txtPrice2_'+t_mt).val(asd[i].gweight);
-                                        q_bbs_addrow('bbs',t_mt,1);
-                                        t_mt+=1
+                                         $('#txtDatea_'+t_mt).val(asd[i].datea);
+                                         $('#txtProductno_'+t_mt).val(asd[i].productno);
+                                         $('#txtProduct_'+t_mt).val(asd[i].product);
+                                         $('#txtSpec_'+t_mt).val(asd[i].spec);
+                                         $('#txtUnit_'+t_mt).val(asd[i].unit);
+                                         $('#txtPostno_'+t_mt).val('IT');
+                                         $('#txtMount_'+t_mt).val(1);
+                                         $('#txtPrice2_'+t_mt).val(asd[i].gweight);
+                                         q_bbs_addrow('bbs',t_mt,1);
+                                         t_mt+=1
                                     }
                                 }
                                 
@@ -142,7 +115,6 @@
                         }
                         $('#txtNoa').focus();
                         sum();
-                        break;
 					case q_name:
 						if (q_cur == 4)
 							q_Seek_gtPost();
@@ -169,22 +141,15 @@
 			function _btnSeek() {
 				if (q_cur > 0 && q_cur < 4)
 					return;
-				q_box('add3_s.aspx', q_name + '_s', "550px", "400px", q_getMsg("popSeek"));
+				q_box('add5_s.aspx', q_name + '_s', "550px", "400px", q_getMsg("popSeek"));
 			}
 
 			function btnIns() {
 				 _btnIns();
-				$('#txtNoa').val('AUTO');
-				$('#txtDatea').val(q_date);
-				$('#txtDatea').focus();
-				
-				$('#btnOrdesyr').click(function() {
-                    if($('#txtCartype').val().length!=0){
-                        t_where = "where=^^ noa='"+$('#txtCartype').val()+"' ^^";
-                        q_gt('orde', t_where, 0, 0, 0, "ordeyear", r_accy);  
-                    }
-                });
-                
+                $('#txtNoa').val('AUTO');
+                $('#txtDatea').val(q_date);
+                $('#txtDatea').focus();
+
                 $('#btnOrdes').click(function() {
                     if($('#txtCartype').val().length!=0){
                         t_where = "where=^^ noa='"+$('#txtCartype').val()+"' ^^";
@@ -213,18 +178,6 @@
 			function bbsAssign() {
 				for (var i = 0; i < q_bbsCount; i++) {
 					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
-					    $('#txtProduct_' + j).change(function() {
-                            sum();
-                        });
-					    $('#txtSpec_' + j).change(function() {
-                            sum();
-                        });
-                        $('#txtPrice2_' + j).change(function() {
-                            sum();
-                        });
-                        $('#txtCount1_' + j).change(function() {
-                            sum();
-                        });
 					}
 				}
 				_bbsAssign();
@@ -233,9 +186,9 @@
 			function bbsSave(as) {
 				t_err = '';
 				if (!as['productno'] && !as['product']) {
-					as[bbsKey[1]] = '';
-					return;
-				}
+                    as[bbsKey[1]] = '';
+                    return;
+                }
 				q_nowf();
 				as['noa'] = abbm2['noa'];
 				if (t_err) {
@@ -247,35 +200,41 @@
 
 			function sum() {
 			        var t_round=1+Math.random();
-			        var t_spec,t_count1=0,t_count2=0,t_price=0
-				    for (var j = 0; j < q_bbsCount; j++) {
-    				    t_spec=replaceAll(replaceAll($('#txtSpec_'+j).val().substr(0,4),'x',''),'-','');
+			        if(t_round>1.02)
+			           t_round=1.02;  
+                    for (var j = 0; j < q_bbsCount; j++) {
+                        t_spec=replaceAll(replaceAll($('#txtSpec_'+j).val().substr(0,4),'x',''),'-','');
                         if($('#txtPrice2_'+j).val().length!=0){
-                            if(t_spec<75){
-                                $('#txtPrice_'+j).val($('#txtPrice2_'+j).val()*0.08);
-                                $('#txtCount2_'+j).val(q_mul(q_mul($('#txtCount1_'+j).val(),t_round),$('#txtPrice2_'+j).val()));
-                            }else if(t_spec>= 75 && t_spec < 450){
-                                $('#txtPrice_'+j).val($('#txtPrice2_'+j).val()*0.08);
-                                $('#txtCount2_'+j).val(q_mul(q_mul($('#txtCount1_'+j).val(),t_round),$('#txtPrice2_'+j).val()));
-                            }else if(t_spec >= 500 && t_spec < 1000){
-                                $('#txtPrice_'+j).val($('#txtPrice2_'+j).val()*0.06);
-                                $('#txtCount2_'+j).val(q_mul(q_mul($('#txtCount1_'+j).val(),t_round),$('#txtPrice2_'+j).val()));
-                            }else if(t_spec >= 1000 && t_spec < 2600){
-                                $('#txtPrice_'+j).val($('#txtPrice2_'+j).val()*0.04);
-                                $('#txtCount2_'+j).val(q_mul(q_mul($('#txtCount1_'+j).val(),t_round),$('#txtPrice2_'+j).val()));
+                            $('#txtTotal_'+j).val(q_mul(q_mul($('txtMount_'+j).val(),$('#txtPrice_'+j).val()),t_round));
+                            if($('#txtProduct_'+i).val().indexOf('管塞')>-1 ||$('#txtProduct_'+i).val().indexOf('盲蓋')>-1){
+                                $('#txtCount1_'+j).val(0);
+                                $('#txtCount2_'+j).val(0);
+                            }else if(t_spec<75){
+                                $('#txtBoil').val(40);
+                            }else if(t_spec>= 75 && t_spec < 350){
+                                $('#txtBoil').val(30);
+                                $('#txtCount1_'+j).val(30);
+                                $('#txtCount2_'+j).val(30);
+                            }else if(t_spec >= 350 && t_spec < 400){
+                                $('#txtBoil').val(25);
+                                $('#txtCount1_'+j).val(25);
+                                $('#txtCount2_'+j).val(25);
+                            }else if(t_spec >= 700 && t_spec < 1100){
+                                $('#txtBoil').val(20);
+                                $('#txtCount1_'+j).val(20);
+                                $('#txtCount2_'+j).val(20);
+                            }else if(t_spec >= 1100 && t_spec < 2600){
+                                $('#txtBoil').val(15);
+                                $('#txtCount1_'+j).val(15);
+                                $('#txtCount2_'+j).val(15);
                             }else{
-                                $('#txtPrice_'+j).val(0);
+                                $('#txtBoil').val(0);
+                                $('#txtCount1_'+j).val(0);
                                 $('#txtCount2_'+j).val(0);
                             }
                         }
-                        
-                        t_count1=q_add(t_count1, q_mul(q_float('txtCount1_' + j),q_float('txtPrice2_' + j)));
-                        t_count2=q_add(t_count2, q_float('txtCount2_' + j));
-                        t_price=q_add(t_price, q_float('txtPrice_' + j));
                     }
-                    $('#txtBoil').val(t_count1);
-                    $('#txtEoil').val(t_price);
-                    $('#txtTotal').val(t_count2);
+				
 			}
 
 			function refresh(recno) {
@@ -345,7 +304,7 @@
 			}
 			.dview {
 				float: left;
-				width: 400px;
+				width: 450px;
 				border-width: 0px;
 			}
 			.tview {
@@ -366,7 +325,7 @@
 			}
 			.dbbm {
 				float: left;
-				width: 700px;
+				width: 650px;
 				border-radius: 5px;
 			}
 			.tbbm {
@@ -436,7 +395,7 @@
 				width: 100%;
 			}
 			.dbbs {
-				width: 1250px;
+				width: 1300px;
 			}
 			.tbbs a {
 				font-size: medium;
@@ -459,64 +418,57 @@
 			<div class="dview" id="dview">
 				<table class="tview" id="tview">
 					<tr>
-						<td align="center" style="width:5%"><a id='vewChk'> </a></td>
-						<td align="center" style="width:20%"><a id='vewDatea_bq'>檢驗日期</a></td>
-						<td align="center" style="width:30%"><a id='vewNoa'> </a></td>
-						<td align="center" style="width:45%"><a id='vewCardeal_bq'>客戶</a></td>
-					</tr>
-					<tr>
-						<td ><input id="chkBrow.*" type="checkbox" style=''/></td>
-						<td align="center" id='datea'>~datea</td>
-						<td align="center" id='noa'>~noa</td>
-						<td align="center" id='cardeal'>~cardeal</td>
-					</tr>
+                        <td align="center" style="width:5%"><a id='vewChk'> </a></td>
+                        <td align="center" style="width:20%"><a id='vewDatea_bq'>檢驗日期</a></td>
+                        <td align="center" style="width:30%"><a id='vewNoa'> </a></td>
+                        <td align="center" style="width:45%"><a id='vewCardeal_bq'>客戶</a></td>
+                    </tr>
+                    <tr>
+                        <td ><input id="chkBrow.*" type="checkbox" style=''/></td>
+                        <td align="center" id='datea'>~datea</td>
+                        <td align="center" id='noa'>~noa</td>
+                        <td align="center" id='cardeal'>~cardeal</td>
+                    </tr>
 				</table>
 			</div>
 			<div class='dbbm'>
 				<table class="tbbm" id="tbbm">
 					<tr style="height:1px;">
-						<td> </td>
-						<td> </td>
-						<td> </td>
-						<td> </td>
-						<td> </td>
-						<td> </td>
-						<td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
 						<td class="tdZ"> </td>
 					</tr>
 					<tr>
-						<td class="td1"><span> </span><a id='lblDatea_bq' class="lbl">檢驗日期</a></td>
-						<td class="td2" colspan="2"><input id="txtDatea" type="text" class="txt c1"/></td>
-						<td class="td4"><span> </span><a id='lblNoa' class="lbl"> </a></td>
-						<td class="td5" colspan="2"><input id="txtNoa" type="text" class="txt c1" /></td>
-						<td class="td6"><input id="btnOrdesyr" type="button" value="訂單匯入-年份"/></td>
-					</tr>
+                        <td class="td1"><span> </span><a id='lblDatea_bq' class="lbl">檢驗日期</a></td>
+                        <td class="td2" colspan="2"><input id="txtDatea" type="text" class="txt c1"/></td>
+                        <td class="td4"><span> </span><a id='lblNoa' class="lbl"> </a></td>
+                        <td class="td5" colspan="2"><input id="txtNoa" type="text" class="txt c1" /></td>
+                    </tr>
 					<tr>
-					    <td class="td1"><span> </span><a id='lblContract' class="lbl">合約編號</a></td>
+                        <td class="td1"><span> </span><a id='lblContract' class="lbl">合約編號</a></td>
                         <td class="td2" colspan="2"><input id="txtContract" type="text" class="txt c1"/></td>
                         <td class="td3"><span> </span><a id='lblCartype_bq' class="lbl">訂單號碼</a></td>
                         <td class="td4" colspan="2"><input id="txtCartype" type="text" class="txt c1" /></td>
-                        <td class="td6"><input id="btnOrdes" type="button" value="訂單匯入-製造編號"/></td>
+                        <td class="td6"><input id="btnOrdes" type="button" value="訂單匯入"/></td>
                     </tr>
 					<tr>
                         <td class="td1"><span> </span><a id='lblAddr' class="lbl">工程名稱</a></td>
                         <td class="td2" colspan="6"><input id="txtAddr" type="text" class="txt c1" style="width: 99%"/></td>
                     </tr>
-					<tr>
-						<td class="td1"><span> </span><a id='lblCardealno_bq' class="lbl btn">客戶名稱</a></td>
-						<td class="td2" colspan="6">
-							<input id="txtCardealno" type="text" class="txt c2"/>
-							<input id="txtCardeal" type="text" class="txt c3"/>
-						</td>
-					</tr>
-					<tr>
-						<td class="td1"><span> </span><a id='lblBoil_bq' class="lbl">標準總重</a></td>
-						<td class="td2"><input id="txtBoil" type="text" class="txt num c1"/></td>
-						<td class="td3" align="center"><a id='lblEoil_bq'>許可差總重</a></td>
-						<td class="td4"><input id="txtEoil" type="text" class="txt num c1"/></td>
-						<td class="td5" align="center"><a id='lblTotal_bq'>實際總重</a></td>
-                        <td class="td6"><input id="txtTotal" type="text" class="txt num c1"/></td>
-					</tr>
+                    <tr>
+                        <td class="td1"><span> </span><a id='lblCardealno_bq' class="lbl btn">客戶名稱</a></td>
+                        <td class="td2" colspan="4">
+                            <input id="txtCardealno" type="text" class="txt c2"/>
+                            <input id="txtCardeal" type="text" class="txt c3"/>
+                        </td>
+                        <td class="td7"><span> </span><a id='lblBoil_bq' class="lbl">耐壓測試</a></td>
+                        <td class="td8"><input id="txtBoil" type="text" class="txt num c1"/></td>
+                    </tr>
 				</table>
 			</div>
 		</div>
@@ -526,37 +478,39 @@
 					<td align="center" style="width: 2%;">
 						<input class="btn" id="btnPlus" type="button" value='+' style="font-weight: bold;" />
 					</td>
+					<td align="center" style="width:90px;"><a id='lbldatea_s'>日期</a></td>
 					<td align="center" style="width:120px;"><a id='lblProductno_s'>產品編號</a></td>
-					<td align="center" style="width:120px;"><a id='lblProduct_s'>產品名稱</a></td>
-					<td align="center" style="width:120px;"><a id='lblSpec_s'>規格</a></td>
-					<td align="center" style="width:50px;"><a id='lblUnit_s'>單位</a></td>
-					<td align="center" style="width:80px;"><a id='lblCount1s_s'>數量</a></td>
-					<td align="center" style="width:100px;"><a id='lblPosts_s'>製造商或代號</a></td>
-					<td align="center" style="width:50px;"><a id='lblPostno_s'>年份</a></td>
-					<td align="center" style="width:80px;"><a id='lblCustpno_s'>製造編號</a></td>
-					<td align="center" style="width:80px;"><a id='lblCustpno2_s'>製造編號A</a></td>
-					<td align="center" style="width:80px;"><a id='lblPrice2s_s'>單重</a></td>
-					<td align="center" style="width:80px;"><a id='lblPrices_s'>單位許可差</a></td>
-					<td align="center" style="width:80px;"><a id='lblCount2s_s'>實際重</a></td>
-					<td align="center" style="width:100px;"><a id='lblMemo_s'> </a></td>
+                    <td align="center" style="width:120px;"><a id='lblProduct_s'>產品名稱</a></td>
+                    <td align="center" style="width:120px;"><a id='lblSpec_s'>規格</a></td>
+                    <td align="center" style="width:80px;"><a id='lblTotal_s'>重量</a></td>
+                    <td align="center" style="width:80px;"><a id='lblPosts_s'>合格編號</a></td> 
+                    <td align="center" style="width:80px;"><a id='lblCount1s_s'>管身1分鐘</a></td>
+                    <td align="center" style="width:80px;"><a id='lblCount2s_s'>管尾承插口1分鐘</a></td>
+                    <td align="center" style="width:50px;"><a id='lblUnit_s'>配件</a></td>
+                    <td align="center" style="width:50px;"><a id='lblMount_s'>數量</a></td>
+                    <td align="center" style="width:60px;"><a id='lblPostno_s'>製造商或代號</a></td>
+                    <td align="center" style="width:80px;"><a id='lblPrices_s'>單重</a></td>
+                    <td align="center" style="width:80px;"><a id='lblPrice2s_s'>單位許可差</a></td>
+                    <td align="center" style="width:100px;"><a id='lblMemo_s'> </a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
 						<input class="btn" id="btnMinus.*" type="button" value='-' style=" font-weight: bold;" />
 						<input id="txtNoq.*" type="text" style="display: none;" />
 					</td>
+					<td><input id="txtDatea.*" type="text" class="txt c1"/></td>
 					<td><input id="txtProductno.*" type="text" class="txt c1"/></td>
-					<td><input id="txtProduct.*" type="text" class="txt c1"/></td>
-					<td><input id="txtSpec.*" type="text" class="txt c1"/></td>
-					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
-					<td><input id="txtCount1.*" type="text" class="txt num c1"/></td>
-					<td><input id="txtPost.*" type="text" class="txt c1"/></td>
-					<td><input id="txtPostno.*" type="text" class="txt c1"/></td>
-					<td><input id="txtCustpno.*" type="text" class="txt c1"/></td>
-					<td><input id="txtCustpno2.*" type="text" class="txt c1"/></td>
-					<td><input id="txtPrice2.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtProduct.*" type="text" class="txt c1"/></td>
+                    <td><input id="txtSpec.*" type="text" class="txt c1"/></td>
+                    <td><input id="txtTotal.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtPost.*" type="text" class="txt c1"/></td>
+                    <td><input id="txtCount1.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtCount2.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtUnit.*" type="text" class="txt c1"/></td>
+                    <td><input id="txtMount.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtPostno.*" type="text" class="txt c1"/></td>
 					<td><input id="txtPrice.*" type="text" class="txt num c1"/></td>
-					<td><input id="txtCount2.*" type="text" class="txt num c1"/></td>
+                    <td><input id="txtPrice2.*" type="text" class="txt num c1"/></td>
 					<td><input id="txtMemo.*" type="text" class="txt c1"/></td>
 				</tr>
 			</table>

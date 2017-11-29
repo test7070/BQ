@@ -39,7 +39,7 @@
             brwKey = 'noa';
             //ajaxPath = ""; // 只在根目錄執行，才需設定
             aPop = new Array(
-            ['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,paytype,trantype,tel,fax,zip_comp,addr_comp', 'txtCustno,txtComp,txtNick,txtPaytype,cmbTrantype,txtTel,txtFax,txtPost,txtAddr', 'cust_b.aspx']
+            ['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,tel,fax,zip_comp,addr_comp', 'txtCustno,txtComp,txtNick,txtTel,txtFax,txtPost,txtAddr', 'cust_b.aspx']
             ,['txtProductno_', 'btnProduct_', 'ucaucc', 'noa,product,unit,spec', 'txtProductno_,txtProduct_,txtUnit_,txtSpec_', 'ucaucc_b.aspx']
             ,['txtProductno__', 'btnProductno__', 'ucaucc', 'noa,product', 'txtProductno__,txtProduct__', 'ucaucc_b.aspx']);
             brwCount2 = 12;
