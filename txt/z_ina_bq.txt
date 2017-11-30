@@ -1,0 +1,131 @@
+z_ina_bq3:
+declare @bdate nvarchar(10) = case when '#non'=[2] then '' else [2] end
+declare @edate nvarchar(10) = case when '#non'=[3] then char(255) else [3] end
+declare @bpno nvarchar(50) = case when '#non'=[5] then '' else [5] end
+declare @epno nvarchar(50) = case when '#non'=[6] then char(255) else [6] end
+declare @bmech nvarchar(50) = case when '#non'=[9] then '' else [9] end
+declare @emech nvarchar(50) = case when '#non'=[10] then char(255) else [10] end
+declare @tmp table(
+	gno nvarchar(5),
+	productno nvarchar(50),
+	product nvarchar(50),
+	mount float,
+	[weight] float,
+	mount2 float,
+	ct float,
+	worker nvarchar(20),
+	timea nvarchar(10),
+	zweight float,
+	sweight float,
+	mech nvarchar(10)
+)
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,mech)
+select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea,b.mech
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.mechno between @bmech and @emech
+
+insert into @tmp (gno,zweight,[weight],sweight)
+select '1',0,SUM([weight]),SUM([weight])
+from @tmp where RIGHT(productno,1)!='Z'
+
+update a set a.zweight = ISNULL(b.weight,0)
+from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
+where gno='1'
+update @tmp set sweight = zweight + [weight] where gno='1'
+update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set weight = isnull(weight,0)
+update @tmp set sweight = isnull(sweight,0)
+select * from @tmp order by gno;
+---------------------------------------------------------------------------------------------------------------
+z_ina_bq2:
+declare @bdate nvarchar(10) = case when '#non'=[2] then '' else [2] end
+declare @edate nvarchar(10) = case when '#non'=[3] then char(255) else [3] end
+declare @bpno nvarchar(50) = case when '#non'=[5] then '' else [5] end
+declare @epno nvarchar(50) = case when '#non'=[6] then char(255) else [6] end
+declare @bsss nvarchar(50) = case when '#non'=[7] then '' else [7] end
+declare @esss nvarchar(50) = case when '#non'=[8] then char(255) else [8] end
+declare @tmp table(
+	gno nvarchar(5),
+	productno nvarchar(50),
+	product nvarchar(50),
+	mount float,
+	[weight] float,
+	mount2 float,
+	ct float,
+	worker nvarchar(20),
+	timea nvarchar(10),
+	zweight float,
+	sweight float,
+	class nvarchar(10)
+)
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,class)
+select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea,b.class
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.sssno between @bsss and @esss
+
+insert into @tmp (gno,zweight,[weight],sweight)
+select '1',0,SUM([weight]),SUM([weight])
+from @tmp where RIGHT(productno,1)!='Z'
+
+update a set a.zweight = ISNULL(b.weight,0)
+from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
+where gno='1'
+update @tmp set sweight = zweight + [weight] where gno='1'
+update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set weight = isnull(weight,0)
+update @tmp set sweight = isnull(sweight,0)
+select * from @tmp order by gno;
+---------------------------------------------------------------------------------------------------------------
+z_ina_bq1:
+declare @bdate nvarchar(10) = case when '#non'=[2] then '' else [2] end
+declare @edate nvarchar(10) = case when '#non'=[3] then char(255) else [3] end
+declare @typea nvarchar(10) = case when '#non'=[4] then char(255) else [4] end
+declare @bpno nvarchar(50) = case when '#non'=[5] then '' else [5] end
+declare @epno nvarchar(50) = case when '#non'=[6] then char(255) else [6] end
+declare @tmp table(
+	gno nvarchar(5),
+	productno nvarchar(50),
+	product nvarchar(50),
+	mount float,
+	[weight] float,
+	mount2 float,
+	ct float,
+	worker nvarchar(20),
+	timea nvarchar(10),
+	zweight float,
+	sweight float
+)
+if([4]='')
+begin
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
+select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno
+end
+else
+begin
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
+select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno
+end
+insert into @tmp (gno,zweight,[weight],sweight)
+select '1',0,SUM([weight]),SUM([weight])
+from @tmp where RIGHT(productno,1)!='Z'
+
+update a set a.zweight = ISNULL(b.weight,0)
+from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
+where gno='1'
+update @tmp set sweight = zweight + [weight] where gno='1'
+update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set weight = isnull(weight,0)
+update @tmp set sweight = isnull(sweight,0)
+select * from @tmp order by gno;
