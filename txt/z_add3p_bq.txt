@@ -1,0 +1,172 @@
+﻿z_add3p_bq1:--z_add3p_bq1
+declare @t_bnoa nvarchar(30)
+set @t_bnoa = case when '#non' = [1] then '' else [1] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,
+	page int,
+	custno nvarchar(50),
+	comp nvarchar(50),
+	contract nvarchar(50),
+	addr nvarchar(max),
+	productno nvarchar(50),
+	product nvarchar(100),
+	spec nvarchar(100),
+	unit nvarchar(50),
+	mount float,
+	post nvarchar(50),
+	postno nvarchar(50),
+	w1 nvarchar(50),
+	w2 nvarchar(50),
+	weight float,
+	tw1 float,
+	tw2 float
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by b.noa order by b.noq),'',a.cardealno,a.cardeal,a.contract,a.addr,b.productno,'',b.spec,b.unit,b.count1,b.post,b.postno
+,case when isnull(price2,0)!=0 then '('+dbo.getComma(count1,0)+'*'+dbo.getComma(price2,1)+')' end
+,case when isnull(price,0)!=0 then '('+dbo.getComma(count1,0)+'*'+dbo.getComma(price,1)+')' end
+,case when isnull(b.count2,0)!=0 then round(b.count2,1) end,round(b.count1*b.price2,1),round(b.count1*b.price,2)
+from add3 a left join add3s b on a.noa=b.noa
+where (a.noa=@t_bnoa)
+
+insert @tmp(gno,custno,rr,weight,tw1,tw2)
+select '1',custno,MAX(rr)+1,SUM(weight),SUM(tw1),SUM(tw2)
+from @tmp
+group by custno
+
+declare @pageline int =36--一頁36個品項
+declare @custno nvarchar(50) 
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(cast(rr as float)/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select custno,MAX(rr),MAX(page) from @tmp group by custno
+open cursor_table 
+fetch next from cursor_table 
+into @custno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,custno,rr,page)
+		select '2',@custno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @custno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+insert @tmp(gno,custno,rr,page)
+select '3',custno,99998,page
+from @tmp
+group by custno,page
+
+insert @tmp(gno,custno,rr,page)
+select '4',custno,99999,page
+from @tmp
+group by custno,page
+
+select 
+case when gno!='1' then cast(tw1 as nvarchar(50)) else cast(tw1 as nvarchar(50))+'Kg' end tw1
+,case when gno!='1' then cast(tw2 as nvarchar(50)) else cast(tw2 as nvarchar(50))+'Kg' end tw2
+,case when gno!='1' then cast(weight as nvarchar(50)) else cast(weight as nvarchar(50))+'Kg' end weight
+,* from @tmp
+order by custno,page,rr
+;
+-----------------------------------------------------------------------------------------------------------
+z_add3p_bq2:--z_add3p_bq2
+declare @t_bnoa nvarchar(30)
+set @t_bnoa = case when '#non' = [1] then '' else [1] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,
+	page int,
+	custno nvarchar(50),
+	comp nvarchar(50),
+	contract nvarchar(50),
+	addr nvarchar(max),
+	productno nvarchar(50),
+	product nvarchar(100),
+	spec nvarchar(100),
+	unit nvarchar(50),
+	mount float,
+	post nvarchar(50),
+	postno nvarchar(50),
+	w1 nvarchar(50),
+	w2 nvarchar(50),
+	weight float,
+	tw1 float,
+	tw2 float
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by b.noa order by b.noq),'',a.cardealno,a.cardeal,a.contract,a.addr,b.productno,'',b.spec,b.unit,b.count1,b.post
+,case when isnull(b.custpno,'')!=0 then b.custpno else b.custpno2 end
+,case when isnull(price2,0)!=0 then '('+dbo.getComma(count1,0)+'*'+dbo.getComma(price2,1)+')' end
+,case when isnull(price,0)!=0 then '('+dbo.getComma(count1,0)+'*'+dbo.getComma(price,1)+')' end
+,case when isnull(b.count2,0)!=0 then round(b.count2,1) end,round(b.count1*b.price2,1),round(b.count1*b.price,2)
+from add3 a left join add3s b on a.noa=b.noa
+where (a.noa=@t_bnoa)
+
+insert @tmp(gno,custno,rr,weight,tw1,tw2)
+select '1',custno,MAX(rr)+1,SUM(weight),SUM(tw1),SUM(tw2)
+from @tmp
+group by custno
+
+declare @pageline int =36--一頁36個品項
+declare @custno nvarchar(50) 
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(cast(rr as float)/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select custno,MAX(rr),MAX(page) from @tmp group by custno
+open cursor_table 
+fetch next from cursor_table 
+into @custno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,custno,rr,page)
+		select '2',@custno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @custno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+insert @tmp(gno,custno,rr,page)
+select '3',custno,99998,page
+from @tmp
+group by custno,page
+
+insert @tmp(gno,custno,rr,page)
+select '4',custno,99999,page
+from @tmp
+group by custno,page
+
+select 
+case when gno!='1' then cast(tw1 as nvarchar(50)) else cast(tw1 as nvarchar(50))+'Kg' end tw1
+,case when gno!='1' then cast(tw2 as nvarchar(50)) else cast(tw2 as nvarchar(50))+'Kg' end tw2
+,case when gno!='1' then cast(weight as nvarchar(50)) else cast(weight as nvarchar(50))+'Kg' end weight
+,* from @tmp
+order by custno,page,rr
+;
