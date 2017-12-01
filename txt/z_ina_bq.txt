@@ -20,11 +20,11 @@ declare @tmp table(
 	mech nvarchar(10)
 )
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,mech)
-select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea,b.mech
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea,b.mech
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.mechno between @bmech and @emech
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.mechno between @bmech and @emech and a.kind='1'
 
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
@@ -34,7 +34,7 @@ update a set a.zweight = ISNULL(b.weight,0)
 from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
 where gno='1'
 update @tmp set sweight = zweight + [weight] where gno='1'
-update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set ct = case when weight > 0 then round((mount2/weight)*100,2) end
 update @tmp set weight = isnull(weight,0)
 update @tmp set sweight = isnull(sweight,0)
 select * from @tmp order by gno;
@@ -61,11 +61,11 @@ declare @tmp table(
 	class nvarchar(10)
 )
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,class)
-select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea,b.class
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea,b.class
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.sssno between @bsss and @esss
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.sssno between @bsss and @esss  and a.kind='1'
 
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
@@ -75,7 +75,7 @@ update a set a.zweight = ISNULL(b.weight,0)
 from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
 where gno='1'
 update @tmp set sweight = zweight + [weight] where gno='1'
-update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set ct = case when weight > 0 then round((mount2/weight)*100,2) end
 update @tmp set weight = isnull(weight,0)
 update @tmp set sweight = isnull(sweight,0)
 select * from @tmp order by gno;
@@ -102,20 +102,20 @@ declare @tmp table(
 if([4]='')
 begin
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
-select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and a.kind='1'
 end
 else
 begin
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
-select '0',b.productno,b.product,b.mount,b.[weight]*c.uweight,b.price,b.namea,b.timea
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno
+where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno  and a.kind='1'
 end
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
@@ -125,7 +125,7 @@ update a set a.zweight = ISNULL(b.weight,0)
 from @tmp a outer apply (select SUM([weight]) [weight] from @tmp where RIGHT(productno,1)='Z') b
 where gno='1'
 update @tmp set sweight = zweight + [weight] where gno='1'
-update @tmp set ct = round((mount2/weight)*100,2)
+update @tmp set ct = case when weight > 0 then round((mount2/weight)*100,2) end
 update @tmp set weight = isnull(weight,0)
 update @tmp set sweight = isnull(sweight,0)
 select * from @tmp order by gno;
