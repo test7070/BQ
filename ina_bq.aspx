@@ -530,8 +530,8 @@
 					<td class="isFe"><input id="txtLengthb.*" type="text" class="txt num isFe" style="width:95%;"/></td>
 					
 					<td><input class="txt num" id="txtMount.*" type="text" style="width:95%;"/></td>
-					<td><input class="txt num" id="txtWeight.*" type="text" style="width:95%;"/></td>
-					<td><input class="txt num" id="txtPrice.*" type="text" style="width:95%;"/></td>
+					<td><input class="txt num" id="txtDime.*" type="text" style="width:95%;"/></td>
+					<td><input class="txt num" id="txtWidth.*" type="text" style="width:95%;"/></td>
 					<td>
 						<input class="txt" id="txtMemo.*" type="text" style="width:95%;"/>
 						<input id="recno.*" type="text" style="display:none;" />
