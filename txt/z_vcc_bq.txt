@@ -11,7 +11,7 @@ declare @tmp table(
 	noq nvarchar(5),
 	custno nvarchar(10),
 	comp nvarchar(100),
-	money float,
+	total float,
 	product nvarchar(100),
 	spec nvarchar(20),
 	unit nvarchar(10),
@@ -19,22 +19,22 @@ declare @tmp table(
 	weight float,
 	price float,
 	tax float,
-	total float,
-	total2 float
+	atal float,
+	rtal float
 )
-insert into @tmp (gno,datea,typea,noa,noq,custno,comp,money,product,spec,unit,mount,weight,price,tax,total)
+insert into @tmp (gno,datea,typea,noa,noq,custno,comp,total,product,spec,unit,mount,weight,price,tax,atal)
 select '0',a.datea,case when a.typea='1' then '出' else '退' end,a.noa,b.noq,a.custno,c.nick,a.money,b.product,b.spec,b.unit,b.mount,b.weight,b.price,a.tax,b.total
 from view_vcc a
 left join view_vccs b on a.noa = b.noa
 left join cust c on a.custno = c.noa
 where a.datea between @bdate and @edate
 
-update @tmp set datea='',typea='',noa='',custno='',comp='',money = null where noq!='001'
-update @tmp set total2 = case when typea='退' then money end
+update @tmp set datea='',typea='',noa='',custno='',comp='',total = null where noq!='001'
+update @tmp set rtal = case when typea='退' then total end
 
 
-insert into @tmp (gno,money,total2,weight,tax)
-select '1',SUM(money)-SUM(total2),SUM(total2),SUM(weight),SUM(tax)
+insert into @tmp (gno,total,rtal,weight,tax)
+select '1',SUM(total)-SUM(rtal),SUM(rtal),SUM(weight),SUM(tax)
 from @tmp
 
-select * from @tmp;
+select a.*,@bdate as bdate,@edate as edate from @tmp a;
