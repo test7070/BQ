@@ -67,7 +67,8 @@
 				//bbmNum = [['txtMount', 15, q_getPara('rc2.mountPrecision'), 1], ['txtWeight', 15, q_getPara('rc2.weightPrecision'), 1]];
 				//bbsNum = [['txtLengthb', 15, 2, 1],['txtMount', 15, q_getPara('rc2.mountPrecision'), 1], ['txtWeight', 15, q_getPara('rc2.weightPrecision'), 1]];
 				q_mask(bbmMask);
-				q_cmbParse("cmbItype", '1@生產入庫,2@加工入庫,3@進貨入庫,4@盤點入庫,5@調料入庫,6@客戶入料,7@退貨入庫,8@試水入庫,9@車床入庫,10@鑽孔入庫,11@膠圈入庫,12@螺栓入庫,13@押圈入庫,14@不良品');							  
+				q_cmbParse("cmbItype", '1@生產入庫,2@加工入庫,3@進貨入庫,4@盤點入庫,5@調料入庫,6@客戶入料,7@退貨入庫,8@試水入庫,9@車床入庫,10@鑽孔入庫,11@膠圈入庫,12@螺栓入庫,13@押圈入庫,14@不良品');
+				q_cmbParse("cmbKind", '1@生產,2@加工');
 			}
 
 			function q_boxClose(s2) {
@@ -229,7 +230,7 @@
 				as['datea'] = abbm2['datea'];
 				return true;
 			}
-
+			
 			function sum() {
 				/*var t_mount=0,t_weight=0;
 				for (var j = 0; j < q_bbsCount; j++) {
@@ -466,6 +467,8 @@
                         <td class="tdZ"></td>
                     </tr>
 					<tr>
+						<td><span> </span><a id="lblKind" class="lbl"> </a></td>
+						<td><select id="cmbKind" class="txt c1"> </select></td>
 						<td><span> </span><a id="lblItype" class="lbl"> </a></td>
 						<td><select id="cmbItype" class="txt c1"> </select></td>
 						<td><span> </span><a id="lblDatea" class="lbl"> </a></td>

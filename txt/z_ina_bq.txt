@@ -24,7 +24,7 @@ select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.time
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.mechno between @bmech and @emech
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.mechno between @bmech and @emech and a.kind='1'
 
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
@@ -65,7 +65,7 @@ select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.time
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.sssno between @bsss and @esss
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.sssno between @bsss and @esss  and a.kind='1'
 
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
@@ -106,7 +106,7 @@ select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.time
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and b.productno between @bpno and @epno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and a.kind='1'
 end
 else
 begin
@@ -115,7 +115,7 @@ select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.time
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
-where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno
+where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno  and a.kind='1'
 end
 insert into @tmp (gno,zweight,[weight],sweight)
 select '1',0,SUM([weight]),SUM([weight])
