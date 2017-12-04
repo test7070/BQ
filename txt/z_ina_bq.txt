@@ -1,3 +1,53 @@
+z_ina_bq4:
+declare @bdate nvarchar(10) = case when '#non'=[2] then '' else [2] end
+declare @edate nvarchar(10) = case when '#non'=[3] then char(255) else [3] end
+declare @typea nvarchar(10) = case when '#non'=[4] then char(255) else [4] end
+declare @bpno nvarchar(50) = case when '#non'=[5] then '' else [5] end
+declare @epno nvarchar(50) = case when '#non'=[6] then char(255) else [6] end
+declare @bstore nvarchar(50) = case when '#non'=[11] then '' else [12] end
+declare @estore nvarchar(50) = case when '#non'=[11] then char(255) else [12] end
+declare @tmp table(
+	gno nvarchar(5),
+	productno nvarchar(50),
+	product nvarchar(50),
+	spec nvarchar(50),
+	mount float,
+	uweight float,
+	[weight] float,
+	mount2 float,
+	ct float,
+	worker nvarchar(20),
+	timea nvarchar(10),
+	sweight float
+)
+if([4]='')
+begin
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and b.productno between @bpno and @epno and b.storeno between @bstore and @estore and a.kind='2'
+end
+else
+begin
+insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
+select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea
+from view_ina a
+left join view_inas b on a.noa = b.noa
+left join uca c on c.noa=b.productno
+where a.datea between @bdate and @edate and a.Itype = @typea and b.productno between @bpno and @epno and b.storeno between @bstore and @estore and a.kind='2'
+end
+insert into @tmp (gno,[weight],sweight)
+select '1',SUM([weight]),SUM([weight])
+from @tmp
+
+update @tmp set ct = case when weight > 0 then round((mount2/weight)*100,2) end
+update @tmp set weight = isnull(weight,0)
+update @tmp set sweight = isnull(sweight,0)
+update @tmp set uweight = 1.0
+select * from @tmp order by gno;
+---------------------------------------------------------------------------------------------------------------
 z_ina_bq3:
 declare @bdate nvarchar(10) = case when '#non'=[2] then '' else [2] end
 declare @edate nvarchar(10) = case when '#non'=[3] then char(255) else [3] end
@@ -20,7 +70,7 @@ declare @tmp table(
 	mech nvarchar(10)
 )
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,mech)
-select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea,b.mech
+select '0',b.productno,b.product,b.mount,b.mount*c.uweight,b.width,b.namea,b.timea,b.mech
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
@@ -61,7 +111,7 @@ declare @tmp table(
 	class nvarchar(10)
 )
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea,class)
-select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea,b.class
+select '0',b.productno,b.product,b.mount,b.mount*c.uweight,b.width,b.namea,b.timea,b.class
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno
@@ -102,7 +152,7 @@ declare @tmp table(
 if([4]='')
 begin
 insert into @tmp (gno,productno,product,mount,[weight],mount2,worker,timea)
-select '0',b.productno,b.product,b.mount,b.dime*c.uweight,b.width,b.namea,b.timea
+select '0',b.productno,b.product,b.mount,b.mount*c.uweight,b.width,b.namea,b.timea
 from view_ina a
 left join view_inas b on a.noa = b.noa
 left join uca c on c.noa=b.productno

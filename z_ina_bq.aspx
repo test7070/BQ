@@ -39,23 +39,30 @@
 						value:(' @全部,1@生產入庫,2@加工入庫,3@進貨入庫,4@盤點入庫,5@調料入庫,6@客戶入料,7@退貨入庫,8@試水入庫,9@車床入庫,10@鑽孔入庫,11@膠圈入庫,12@螺栓入庫,13@押圈入庫').split(',')
 						
 					},{//3
-						type : '2',
+						type : '2',//[5][6]
 						name : 'productno', 
 						dbf : 'ucaucc',
 						index : 'noa,product',
 						src : 'ucaucc_b.aspx'
                     },{//4
-						type : '2',
+						type : '2',//[7][8]
 						name : 'worker', 
 						dbf : 'sss',
 						index : 'noa,namea',
 						src : 'sss_b.aspx'
                     },{//5
-						type : '2',
+						type : '2',//[9][10]
 						name : 'mech', 
 						dbf : 'mech',
 						index : 'noa,mech',
 						src : 'mech_b.aspx'
+                    },
+					{//6
+						type : '2',//[11][12]
+						name : 'store', 
+						dbf : 'store',
+						index : 'noa,store',
+						src : 'store_b.aspx'
                     }]
 					});
                 q_popAssign();
