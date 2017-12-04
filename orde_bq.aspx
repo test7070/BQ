@@ -124,7 +124,7 @@
                         }
                         var as = _q_appendData("quats", "", true);
                         q_gridAddRow(bbsHtm, 'tbbs', 'txtNo2,txtProductno,txtProduct,txtSpec,txtGweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo'
-                        , as.length, as, 'no3,productno,product,spec,eweight,unit,mount,price,total,memo', 'txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo','');
+                        , as.length, as, 'no3,productno,product,spec,eweight,unit,mount,price,total,memo', 'txtProductno,txtProduct,txtSpec,txtEweight,txtUnit,txtMount,txtPrice,txtTotal,txtMemo','txtProductno,txtProduct,txtSpec');
                         for ( i = 0; i < q_bbsCount; i++) {
                             if (i < as.length) {
                             }else{

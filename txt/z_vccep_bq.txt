@@ -1,0 +1,79 @@
+﻿z_vccep_bq1:--z_vccep_bq1
+declare @t_bnoa nvarchar(30)
+set @t_bnoa = case when '#non' = [1] then '' else [1] end
+
+declare @tmp table(
+	gno nvarchar(1),
+	rr int,
+	page int,
+	noa nvarchar(50),
+	datea nvarchar(10),
+	ordeno nvarchar(50),
+	odate nvarchar(50),
+	custno nvarchar(50),				
+	contract nvarchar(50),						
+	addr2 nvarchar(100),
+	sales nvarchar(50),					
+	ma nvarchar(100),
+	mb nvarchar(100),				
+	mc nvarchar(100),
+	pno nvarchar(50),
+	product nvarchar(100),
+	spec nvarchar(100),
+	eweight float,
+	unit nvarchar(50),
+	mount float,
+	memo nvarchar(max)
+)
+insert @tmp
+select '0',ROW_NUMBER()over(partition by b.noa order by b.noq),'',a.noa,a.datea,a.ordeno,a.odate,a.custno,a.fax,a.zip_post+a.addr_post,a.sales
+,a.cardeal,a.deivery_addr,a.cardealno,b.productno,b.product,b.spec,b.eweight,b.unit,b.mount,b.memo
+from view_vcce a left join view_vcces b on a.noa=b.noa
+where a.noa=@t_bnoa
+
+declare @pageline int =34--一頁34個品項
+declare @custno nvarchar(50) 
+declare @idno int
+declare @page int
+
+update a
+set page=ceiling(cast(rr as float)/@pageline)
+from (select page,rr from @tmp)a
+
+--補空白行
+declare cursor_table cursor for 
+select custno,MAX(rr),MAX(page) from @tmp group by custno
+open cursor_table 
+fetch next from cursor_table 
+into @custno,@idno,@page
+while(@@FETCH_STATUS <> -1) 
+begin
+	while ((@idno)%@pageline>0)
+	begin
+		set @idno=@idno+1
+		insert @tmp(gno,custno,rr,page)
+		select '1',@custno,@idno,@page
+	end
+
+	fetch next from cursor_table 
+	into @custno,@idno,@page
+end 
+close cursor_table 
+deallocate cursor_table
+
+insert @tmp(gno,rr,page)
+select '2',99998,page
+from @tmp
+group by page
+
+insert @tmp(gno,rr,page)
+select '3',99999,page
+from @tmp
+group by page
+
+select 
+dbo.getComma(eweight,2)eweight
+,dbo.getComma(mount,2)mount
+,* from @tmp
+order by page,rr
+;
