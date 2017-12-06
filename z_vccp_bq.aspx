@@ -30,10 +30,10 @@
                         name : 'accy',
                         value : q_getId()[4]
 					},{//1
-						type : '1',//[2][3]
+						type : '6',//[2]
 						name : 'noa'
 					},{//2
-						type : '8',
+						type : '8',//[3]
                         name : 'xshowprice',
                         value : "1@顯示單價".split(',')
 					}]
