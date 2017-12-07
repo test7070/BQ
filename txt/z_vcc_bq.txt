@@ -37,4 +37,8 @@ insert into @tmp (gno,total,rtal,weight,tax)
 select '1',SUM(total)-SUM(rtal),SUM(rtal),SUM(weight),SUM(tax)
 from @tmp
 
-select a.*,@bdate as bdate,@edate as edate from @tmp a;
+select
+dbo.getComma(price,2)price,
+dbo.getComma(mount,2)mount,
+dbo.getComma(weight,1)weight,
+a.*,@bdate as bdate,@edate as edate from @tmp a;
